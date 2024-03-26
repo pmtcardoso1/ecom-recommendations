@@ -19,12 +19,3 @@ config :logger, level: :info
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
-
-config :ecomrecommendations, Ecomrecommendations.Repo,
-  username: {:system, "DB_USERNAME"},
-  password: {:system, "DB_PASSWORD"},
-  hostname: {:system, "DB_HOSTNAME"},
-  database: {:system, "DB_NAME"},
-  port: 6432,
-  ssl: true,
-  pool_size: 2
