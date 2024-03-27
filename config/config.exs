@@ -22,6 +22,9 @@ config :ecomrecommendations, EcomrecommendationsWeb.Endpoint,
   pubsub_server: Ecomrecommendations.PubSub,
   live_view: [signing_salt: "MR7kUAQH"]
 
+
+config :ecomrecommendations, Ecomrecommendations.Repo, types: Ecomrecommendations.PostgrexTypes
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails
