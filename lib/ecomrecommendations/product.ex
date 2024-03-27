@@ -19,7 +19,7 @@ defmodule Ecomrecommendations.Product do
   def changeset(product, attrs) do
     product
     |> cast(attrs, [:name, :description, :composition, :flower_type, :category_name, :brand_name, :external_id])
-    |> validate_required([:name, :description, :composition, :flower_type, :category_name, :brand_name, :external_id])
+    |> validate_required([:name, :composition, :category_name, :brand_name, :external_id])
     |> unique_constraint(:external_id)
   end
 end
