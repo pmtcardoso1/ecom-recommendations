@@ -3,36 +3,67 @@ defmodule Ecomrecommendations.EmbeddingRecommendations do
 
   import Ecto.Query
   alias Ecomrecommendations.Repo
+  alias Ecomrecommendations.EmbeddedProduct
+
+  @description_weight 0.25
+  @brand_name_weight 0.25
+  @flower_type_weight 0.25
+  @composition_weight 0.25
 
   def get_similar_product(product_id) when is_binary(product_id) do
-    sql = "
-      WITH query AS (
-    SELECT pgml.embed('distilbert-base-uncased', 'An indica-dominant hybrid strain with earthy and pine flavors., A pure sativa strain with an uplifting effect.') AS d_embedding,
-           pgml.embed('distilbert-base-uncased', 'sample brand, example brand') AS b_embedding,
-           pgml.embed('distilbert-base-uncased', 'indica, sativa, hybrid') AS f_embedding,
-           MAX(cannabis_products.composition <-> '[3.14, 2.718, 1.618, 4.669, 0.577, 1.732, 2.302, 1.414, 2.718]')  as max_distance_1,
-           MAX(cannabis_products.composition <-> '[21.5,0.7,1.3,23,1.5,20,0.5,22,0.9]')  as max_distance_2
-           from cannabis_products
-)
-SELECT description, brand_name, flower_type, composition,
-       pgml.cosine_similarity(product_embeddings.description_embed, query.d_embedding) * 0.25 +
-       pgml.cosine_similarity(product_embeddings.brand_name_embed, query.b_embedding) * 0.25 +
-       pgml.cosine_similarity(product_embeddings.flower_type_embed, query.f_embedding) * 0.25 +
-       (1 - (product_embeddings.composition <-> '[3.14, 2.718, 1.618, 4.669, 0.577, 1.732, 2.302, 1.414, 2.718]') / query.max_distance_1) * 0.125 +
-       (1 - (product_embeddings.composition <-> '[21.5,0.7,1.3,23,1.5,20,0.5,22,0.9]') / query.max_distance_2) * 0.125 total_similarity
-FROM product_embeddings, query
-ORDER BY total_similarity DESC
-LIMIT 50;"
-
-
-    Repo.query(sql)
+    with [target | _] <- get_product_embeddings(product_id) do
+      (
+        from pe in EmbeddedProduct,
+        select: %{
+          external_id: pe.external_id,
+          total_similarity: (
+            fragment("pgml.cosine_similarity(?, ?) * ?", pe.description, ^target.description, ^@description_weight) +
+            fragment("pgml.cosine_similarity(?, ?) * ?", pe.brand_name, ^target.brand_name, ^@brand_name_weight)+
+            fragment("pgml.cosine_similarity(?, ?) * ?", pe.flower_type, ^target.flower_type, ^@flower_type_weight)+
+            fragment("(1 - (? <-> ?) / ?) * ? as total_similarity", pe.composition, ^target.composition, ^get_max_composition_distance(target), ^@composition_weight)
+          )
+        },
+        where: pe.external_id != ^product_id,
+        order_by: fragment("total_similarity DESC"),
+        limit: 10
+      )
+      |> Repo.all()
+    end
   end
 
+  @spec get_user_recommendations(binary()) :: [%{product_id: <<_::32>>}, ...]
   def get_user_recommendations(user_id) when is_binary(user_id) do
     [
       %{product_id: "AAAA"},
       %{product_id: "BBBB"},
       %{product_id: "CCCC"},
     ]
+  end
+
+  defp get_product_embeddings(product_id) do
+    (
+      from embedding in EmbeddedProduct,
+      where: embedding.external_id == ^product_id,
+      select: %{
+        description: embedding.description,
+        brand_name: embedding.brand_name,
+        flower_type: embedding.flower_type,
+        composition: embedding.composition
+      }
+    )
+    |> Repo.all()
+  end
+
+  defp get_max_composition_distance(target) do
+    {max_distance} =
+      (
+        from pe in EmbeddedProduct,
+        select: {
+          fragment("MAX(? <-> ?)", pe.composition, ^target.composition)
+        }
+      )
+      |> Repo.one()
+
+    max_distance
   end
 end
