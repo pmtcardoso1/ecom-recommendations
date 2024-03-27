@@ -7,6 +7,5 @@ defmodule Ecomrecommendations.Repo.Migrations.CreateTestTables do
 
       timestamps(type: :utc_datetime)
     end
-
   end
 end
