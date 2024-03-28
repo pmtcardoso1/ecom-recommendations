@@ -3,12 +3,13 @@ defmodule Ecomrecommendations.Repo.Migrations.CreateProducts do
 
   def change do
     create table(:products) do
-      add :name, :string
+      add :name, :text
       add :description, :text
-      add :flower_type, :string
-      add :category_name, :string
-      add :brand_name, :string
-      add :external_id, :string
+      add :composition, :vector, size: 9
+      add :flower_type, :text
+      add :category_name, :text
+      add :brand_name, :text
+      add :external_id, :text
 
       timestamps(type: :utc_datetime)
     end
