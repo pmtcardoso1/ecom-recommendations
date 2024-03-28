@@ -25,6 +25,7 @@ defmodule EcomrecommendationsWeb.Router do
     pipe_through :api
     get "/", PageController, :index
     post "/events", EventController, :create
+    get "/recommendations", RecommendationController, :index
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

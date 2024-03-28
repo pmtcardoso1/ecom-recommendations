@@ -4,6 +4,7 @@ defmodule Ecomrecommendations.EmbeddingRecommendations do
   import Ecto.Query
   alias Ecomrecommendations.Repo
   alias Ecomrecommendations.EmbeddedProduct
+  alias Ecomrecommendations.Events
 
   @description_weight 0.25
   @brand_name_weight 0.25
@@ -108,7 +109,13 @@ defmodule Ecomrecommendations.EmbeddingRecommendations do
     {target, max_distance}
   end
 
-  defp get_last_interacted_products(_user_id) do
+  defp get_last_interacted_products(user_id) do
+    # com o user_id ir buscar os últimos produtos da tabela events (ordenados por inserted_at) e devolver a estrutura abaixo (external_id, description, brand_anme, etc)
+    product_ids =
+      user_id
+      |> Events.get_latest_event_for_user()
+      |> Enum.map(fn event -> event.product_id end)
+
     ["BD001", "TW001", "SD001", "GSC001", "WW001"]
     |> Enum.map(fn external_id -> %{
       external_id: external_id,

@@ -4,7 +4,6 @@ defmodule EcomrecommendationsWeb.EventController do
   alias EcomrecommendationsWeb.EventJSON
 
   def create(conn, event_params) do
-    IO.inspect(event_params)
     with {:ok, event} <- Events.insert(event_params) do
       conn
       |> put_view(json: EventJSON, html: EventJSON)
