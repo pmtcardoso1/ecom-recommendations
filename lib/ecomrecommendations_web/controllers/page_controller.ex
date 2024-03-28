@@ -6,4 +6,8 @@ defmodule EcomrecommendationsWeb.PageController do
     # so skip the default app layout.
     render(conn, :home, layout: false)
   end
+
+  def index(conn, _params) do
+    text conn, "API - #{Mix.env()}"
+  end
 end
