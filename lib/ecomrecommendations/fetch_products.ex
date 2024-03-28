@@ -2,6 +2,7 @@ defmodule Ecomrecommendations.FetchProducts do
   use GenServer
   alias Ecomrecommendations.ProductFieldRefiner
   alias HTTPoison.Response
+  alias Ecomrecommendations.Products
 
   @store_id "6e797121-e8f5-41fa-b688-355fcca8f630"
   @store_url "https://api.tymber.io/api/v1/products/"
@@ -20,14 +21,14 @@ defmodule Ecomrecommendations.FetchProducts do
     @impl true
     def handle_info(:api_call, _) do
       case call_api(0, []) do
-      {:ok, nil} ->
-        IO.puts("End of Fetching")
-      {:error, reason} ->
-      handle_error(reason)
+        {:ok, nil} ->
+          IO.puts("End of Fetching")
+        {:error, reason} ->
+          handle_error(reason)
       end
 
       schedule_api_call()
-    {:noreply, nil}
+      {:noreply, nil}
     end
 
     defp call_api(offset, products) do
@@ -40,13 +41,13 @@ defmodule Ecomrecommendations.FetchProducts do
           total_count = meta |> Map.get("total_count", 0)
           new_products = body |> Jason.decode!() |> Map.get("data", %{})
           total_products = new_products ++ products
-          if(offset < total_count) do
-            new_offset = offset + 20
-            call_api(new_offset, total_products)
-          else
+          # if(offset < total_count) do
+          #   new_offset = offset + 20
+          #   call_api(new_offset, total_products)
+          # else
             handle_products(total_products)
             {:ok, nil}
-          end
+          # end
         {:ok, %Response{status_code: _status_code}} ->
           {:error, :non_200_response}
         {:error, reason} ->
@@ -55,7 +56,10 @@ defmodule Ecomrecommendations.FetchProducts do
     end
 
     defp handle_products(total_products) do
-      ProductFieldRefiner.filter_fields(total_products)
+      total_products
+      |> ProductFieldRefiner.filter_fields
+      |> Enum.each(&Products.insert/1)
+      total_products
   end
 
     defp handle_error(reason) do
@@ -68,6 +72,6 @@ defmodule Ecomrecommendations.FetchProducts do
 
     defp schedule_api_call() do
       IO.puts("Scheduled next API call")
-      Process.send_after(self(), :api_call, 5 * 60 * 1000)
+      Process.send_after(self(), :api_call, 10 * 1000)
         end
   end
