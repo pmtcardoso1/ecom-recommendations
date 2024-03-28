@@ -10,6 +10,7 @@ defmodule Ecomrecommendations.Application do
     children = [
       EcomrecommendationsWeb.Telemetry,
       Ecomrecommendations.Repo,
+      Ecomrecommendations.FetchProducts,
       {DNSCluster, query: Application.get_env(:ecomrecommendations, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Ecomrecommendations.PubSub},
       # Start the Finch HTTP client for sending emails

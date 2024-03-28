@@ -106,7 +106,12 @@ defmodule Ecomrecommendations.EmbeddingRecommendations do
       )
       |> Repo.one()
 
-    {target, max_distance}
+      if max_distance == 0 do
+        {target, 1}
+      else
+        {target, max_distance}
+      end
+
   end
 
   defp get_last_interacted_products(user_id) do
