@@ -1,10 +1,5 @@
 defmodule Ecomrecommendations.ProductFieldRefiner do
 
-
-
-  #   field :composition, Pgvector.Ecto.Vector
-  #   field :brand_name, :string
-
   def filter_fields(productList) do
     IO.puts("Filtering fields...")
     extracted_fields = Enum.map(productList,
