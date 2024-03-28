@@ -59,7 +59,8 @@ defmodule Ecomrecommendations.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.2"},
       {:httpoison, "~> 2.0"},
-      {:pgvector, "~> 0.2.0"} # pgvector support
+      {:pgvector, "~> 0.2.0"}, # pgvector support
+      {:cors_plug, "~> 3.0"}
     ]
   end
 
