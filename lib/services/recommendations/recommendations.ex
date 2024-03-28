@@ -77,9 +77,16 @@ defmodule Ecomrecommendations.EmbeddingRecommendations do
   end
 
   defp get_composition_similarity_query(initial_dynamic, compositions) do
+    size = length(compositions)
+    size =
+      if size == 0 do
+        1
+      else
+        size
+      end
     compositions
     |> Enum.reduce(initial_dynamic, fn {target, max_distance}, dynamic ->
-      dynamic([pe], ^dynamic + fragment("(1 - ((? <-> ?) / ?)) * ?", pe.composition, ^target.composition, ^max_distance, @composition_weight))
+      dynamic([pe], ^dynamic + fragment("(1 - ((? <-> ?) / ?)) * ?", pe.composition, ^target.composition, ^max_distance, ^(@composition_weight / size)))
     end)
   end
 
@@ -91,7 +98,7 @@ defmodule Ecomrecommendations.EmbeddingRecommendations do
         description: embedding.description,
         brand_name: embedding.brand_name,
         flower_type: embedding.flower_type,
-        composition: embedding.composition
+        composition: embedding.composition,
       }
     )
     |> Repo.all()
@@ -120,6 +127,13 @@ defmodule Ecomrecommendations.EmbeddingRecommendations do
     |> Events.get_latest_event_for_user()
     |> Enum.map(fn event -> event.product_id end)
     |> Products.get_products_by_ids()
+    |> Enum.map(fn p -> %{
+      description: p.description || p.name,
+      brand_name: p.brand_name,
+      flower_type: p.flower_type || '',
+      composition: p.composition,
+      external_id: p.external_id
+    } end)
   end
 
   defp join_product_data(products) do

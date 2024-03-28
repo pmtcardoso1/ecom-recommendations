@@ -37,17 +37,20 @@ defmodule Ecomrecommendations.FetchProducts do
       IO.puts("Fetching #{url}")
       case HTTPoison.get(url, headers) do
         {:ok, %Response{status_code: 200, body: body}} ->
-          meta = body |> Jason.decode!() |> Map.get("meta", %{})
+          meta =
+            body
+            |> Jason.decode!()
+            |> Map.get("meta", %{})
           total_count = meta |> Map.get("total_count", 0)
           new_products = body |> Jason.decode!() |> Map.get("data", %{})
           total_products = new_products ++ products
-          # if(offset < total_count) do
-          #   new_offset = offset + 20
-          #   call_api(new_offset, total_products)
-          # else
+           if(offset < total_count) do
+             new_offset = offset + 20
+             call_api(new_offset, total_products)
+           else
             handle_products(total_products)
             {:ok, nil}
-          # end
+           end
         {:ok, %Response{status_code: _status_code}} ->
           {:error, :non_200_response}
         {:error, reason} ->
@@ -59,7 +62,9 @@ defmodule Ecomrecommendations.FetchProducts do
       total_products
       |> ProductFieldRefiner.filter_fields
       |> Enum.each(&Products.insert/1)
-      Products.insert_embeddings_for_products()
+
+      #Products.insert_embeddings_for_products()
+
       total_products
   end
 
@@ -74,5 +79,5 @@ defmodule Ecomrecommendations.FetchProducts do
     defp schedule_api_call() do
       IO.puts("Scheduled next API call")
       Process.send_after(self(), :api_call, 24 * 60 * 60 * 1000)
-        end
+    end
   end
