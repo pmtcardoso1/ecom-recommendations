@@ -1,5 +1,6 @@
 defmodule Ecomrecommendations.FetchProducts do
   use GenServer
+  alias Ecomrecommendations.ProductFieldRefiner
   alias HTTPoison.Response
 
   @store_id "6e797121-e8f5-41fa-b688-355fcca8f630"
@@ -54,7 +55,7 @@ defmodule Ecomrecommendations.FetchProducts do
     end
 
     defp handle_products(total_products) do
-    IO.puts("Received products: #{total_products}")
+      ProductFieldRefiner.filter_fields(total_products)
   end
 
     defp handle_error(reason) do
@@ -67,6 +68,6 @@ defmodule Ecomrecommendations.FetchProducts do
 
     defp schedule_api_call() do
       IO.puts("Scheduled next API call")
-      Process.send_after(self(), :api_call, 1 * 60 * 1000)
+      Process.send_after(self(), :api_call, 10 * 1000)
         end
   end
