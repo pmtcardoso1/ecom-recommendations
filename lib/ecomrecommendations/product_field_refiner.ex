@@ -2,7 +2,7 @@ defmodule Ecomrecommendations.ProductFieldRefiner do
 
   def filter_fields(productList) do
     IO.puts("Filtering fields...")
-    extracted_fields = Enum.map(productList,
+    Enum.map(productList,
     fn %{
       "id" => product_id,
       "attributes" =>

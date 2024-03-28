@@ -1,11 +1,38 @@
 defmodule Ecomrecommendations.Products do
-  alias Ecomrecommendations.{Product, Repo}
+  alias Ecomrecommendations.{Product, EmbeddedProduct, Repo}
+  import Ecto.Query
+
+  @embedding_module "distilbert-base-uncased"
 
   def insert(attrs\\%{}) do
-    IO.inspect(attrs)
     %Product{}
     |> Product.changeset(attrs)
     |> Repo.insert()
-    |> IO.inspect()
+  end
+
+  def insert_embeddings_for_products do
+    get_product_embeddings()
+    |> Enum.each(&insert_embedding/1)
+  end
+
+  def insert_embedding(attrs\\%{}) do
+    %EmbeddedProduct{}
+    |> EmbeddedProduct.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  defp get_product_embeddings do
+    (
+      from p in Product,
+      select: %{
+        id: p.id,
+        description: fragment("pgml.embed(?, coalesce(?, ?, ''))", ^@embedding_module, p.description, p.name),
+        brand_name: fragment("pgml.embed(?, coalesce(?, ''))", ^@embedding_module, p.brand_name),
+        flower_type: fragment("pgml.embed(?, coalesce(?, ''))", ^@embedding_module, p.flower_type),
+        composition: p.composition,
+        external_id: p.external_id,
+      }
+    )
+    |> Repo.all(timeout: :infinity)
   end
 end
