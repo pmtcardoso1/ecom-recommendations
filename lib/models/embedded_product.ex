@@ -16,7 +16,7 @@ defmodule Ecomrecommendations.EmbeddedProduct do
   @doc false
   def changeset(embedded_product, attrs) do
     embedded_product
-    |> cast(attrs, [])
+    |> cast(attrs, [:description, :composition, :flower_type, :brand_name, :external_id])
     |> validate_required([])
     |> unique_constraint(:external_id)
   end
