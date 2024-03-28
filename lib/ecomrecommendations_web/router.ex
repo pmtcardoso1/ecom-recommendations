@@ -24,6 +24,7 @@ defmodule EcomrecommendationsWeb.Router do
   scope "/api", EcomrecommendationsWeb do
     pipe_through :api
     get "/", PageController, :index
+    post "/events", EventController, :create
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
