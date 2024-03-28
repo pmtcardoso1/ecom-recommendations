@@ -4,7 +4,7 @@ defmodule Ecomrecommendations.Products do
 
   @embedding_module "distilbert-base-uncased"
 
-  def insert(attrs\\%{}) do
+  def insert(attrs \\ %{}) do
     %Product{}
     |> Product.changeset(attrs)
     |> Repo.insert()
@@ -15,7 +15,15 @@ defmodule Ecomrecommendations.Products do
     |> Enum.each(&insert_embedding/1)
   end
 
-  def insert_embedding(attrs\\%{}) do
+  def get_products_by_ids(product_ids \\ []) do
+    (
+      from p in Product,
+      where: p.external_id in ^product_ids
+    )
+    |> Repo.all()
+  end
+
+  defp insert_embedding(attrs) do
     %EmbeddedProduct{}
     |> EmbeddedProduct.changeset(attrs)
     |> Repo.insert()
