@@ -68,6 +68,6 @@ defmodule Ecomrecommendations.FetchProducts do
 
     defp schedule_api_call() do
       IO.puts("Scheduled next API call")
-      Process.send_after(self(), :api_call, 10 * 1000)
+      Process.send_after(self(), :api_call, 5 * 60 * 1000)
         end
   end
